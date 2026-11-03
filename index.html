@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#10152f">
+	<title>별의 항해 | 우주 탐험 퀴즈</title>
+	<style>
+		:root {
+			color-scheme: dark;
+			--ink: #f7f5ed;
+			--muted: #b7c1dc;
+			--night: #10152f;
+			--panel: #1b2342;
+			--panel-light: #252f54;
+			--line: #465174;
+			--mint: #73f0cf;
+			--coral: #ff887b;
+			--gold: #ffd166;
+			--violet: #c3a7ff;
+			--focus: #fff3a6;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			min-width: 320px;
+			min-height: 100vh;
+			margin: 0;
+			color: var(--ink);
+			background:
+				radial-gradient(ellipse at 8% 18%, rgb(91 109 173 / 20%), transparent 34rem),
+				radial-gradient(ellipse at 92% 78%, rgb(56 154 143 / 15%), transparent 32rem),
+				var(--night);
+			font-family: "Trebuchet MS", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+			line-height: 1.55;
+		}
+
+		button { font: inherit; }
+		button:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+
+		.page {
+			width: min(100% - 40px, 1020px);
+			margin: 0 auto;
+			padding: 28px 0 42px;
+		}
+
+		.topbar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 20px;
+			padding-bottom: 20px;
+			border-bottom: 1px solid rgb(183 193 220 / 22%);
+		}
+
+		.brand { display: flex; align-items: center; gap: 12px; }
+		.brand-mark {
+			display: grid;
+			width: 42px;
+			aspect-ratio: 1;
+			place-items: center;
+			border: 1px solid rgb(115 240 207 / 55%);
+			border-radius: 50%;
+			color: var(--mint);
+			font-size: 21px;
+		}
+
+		.brand-name { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: 0; }
+		.brand-subtitle { margin: 1px 0 0; color: var(--muted); font-size: 12px; }
+		.mission-label { color: var(--gold); font-size: 12px; font-weight: 800; letter-spacing: 0; }
+
+		main { padding-top: 40px; }
+		.intro { max-width: 680px; margin-bottom: 26px; }
+		.eyebrow { margin: 0 0 9px; color: var(--mint); font-size: 12px; font-weight: 800; letter-spacing: 0; }
+		h1, h2, p { margin-top: 0; }
+		h1 { margin-bottom: 10px; font-size: clamp(30px, 5vw, 46px); line-height: 1.12; }
+		.intro-copy { max-width: 560px; margin-bottom: 0; color: var(--muted); font-size: 15px; }
+
+		.dashboard {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 150px;
+			gap: 18px;
+			align-items: center;
+			margin: 30px 0 18px;
+		}
+
+		.progress-copy { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 9px; color: var(--muted); font-size: 13px; }
+		.progress-copy strong { color: var(--ink); font-weight: 700; }
+		.progress-track { height: 9px; overflow: hidden; border-radius: 999px; background: #313b5e; }
+		.progress-fill { width: 10%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--mint), #a8ed97); transition: width 420ms ease; }
+		.score-box { padding: 10px 14px; border-left: 1px solid var(--line); text-align: right; }
+		.score-caption { display: block; color: var(--muted); font-size: 11px; }
+		.score-value { color: var(--gold); font-size: 22px; font-variant-numeric: tabular-nums; font-weight: 800; }
+
+		.quiz-panel {
+			position: relative;
+			overflow: hidden;
+			padding: clamp(22px, 5vw, 42px);
+			border: 1px solid rgb(183 193 220 / 22%);
+			border-radius: 10px;
+			background: linear-gradient(145deg, rgb(37 47 84 / 94%), rgb(27 35 66 / 96%));
+			box-shadow: 0 22px 70px rgb(3 7 22 / 24%);
+		}
+
+		.quiz-panel::after {
+			position: absolute;
+			top: -64px;
+			right: -56px;
+			width: 180px;
+			height: 180px;
+			border: 1px solid rgb(195 167 255 / 13%);
+			border-radius: 50%;
+			box-shadow: 0 0 0 22px rgb(195 167 255 / 4%), 0 0 0 48px rgb(195 167 255 / 3%);
+			content: "";
+			pointer-events: none;
+		}
+
+		.question-kicker { margin-bottom: 8px; color: var(--mint); font-size: 12px; font-weight: 800; }
+		h2 { max-width: 700px; margin-bottom: 22px; font-size: clamp(21px, 3vw, 28px); line-height: 1.35; }
+		.answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+		.answer {
+			display: flex;
+			min-height: 62px;
+			align-items: center;
+			gap: 13px;
+			padding: 12px 15px;
+			border: 1px solid var(--line);
+			border-radius: 7px;
+			color: var(--ink);
+			background: rgb(16 21 47 / 45%);
+			text-align: left;
+			cursor: pointer;
+			transition: border-color 220ms ease, background-color 220ms ease, color 220ms ease, transform 160ms ease, box-shadow 160ms ease;
+		}
+
+		.answer:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--mint); background: rgb(115 240 207 / 8%); }
+		.answer:active:not(:disabled) { transform: translateY(1px) scale(.985); }
+		.answer:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; box-shadow: 0 0 0 6px var(--night); }
+		.answer:disabled { cursor: default; }
+		.answer-letter { display: grid; width: 31px; height: 31px; flex: 0 0 31px; place-items: center; border-radius: 50%; color: var(--mint); background: rgb(115 240 207 / 12%); font-size: 12px; font-weight: 800; transition: color 220ms ease, background-color 220ms ease; }
+		.answer.is-correct { border-color: var(--mint); background: rgb(115 240 207 / 13%); animation: answer-pop 420ms ease both; }
+		.answer.is-correct .answer-letter { color: #10152f; background: var(--mint); }
+		.answer.is-wrong { border-color: var(--coral); background: rgb(255 136 123 / 12%); animation: answer-shake 420ms ease both; }
+		.answer.is-wrong .answer-letter { color: #24121b; background: var(--coral); }
+
+		.feedback {
+			display: flex;
+			min-height: 0;
+			align-items: flex-start;
+			gap: 10px;
+			margin-top: 0;
+			color: var(--muted);
+			font-size: 14px;
+		}
+
+		.feedback:not(:empty) { min-height: 54px; margin-top: 20px; animation: feedback-in 280ms ease both; }
+		.feedback[data-state="correct"] { color: var(--mint); }
+		.feedback[data-state="incorrect"] { color: #ffb0a7; }
+		.feedback-message { margin: 0; }
+		.feedback-detail { display: block; margin-top: 3px; color: var(--muted); }
+
+		.panel-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
+		.next-button, .restart-button {
+			min-height: 46px;
+			padding: 10px 18px;
+			border: 0;
+			border-radius: 6px;
+			color: #102b32;
+			background: var(--mint);
+			font-weight: 800;
+			cursor: pointer;
+			transition: background 160ms ease, transform 160ms ease;
+		}
+
+		.next-button:hover, .restart-button:hover { transform: translateY(-1px); background: #9af4dc; }
+		[hidden] { display: none !important; }
+
+		.results { text-align: center; }
+		.results-icon { display: grid; width: 76px; height: 76px; margin: 0 auto 18px; place-items: center; border: 1px solid rgb(255 209 102 / 50%); border-radius: 50%; color: var(--gold); background: rgb(255 209 102 / 9%); font-size: 32px; }
+		.results h2 { margin: 0 auto 10px; }
+		.results-copy { max-width: 480px; margin: 0 auto 22px; color: var(--muted); }
+		.final-score { margin-bottom: 24px; color: var(--gold); font-size: 34px; font-weight: 800; }
+		.restart-button { color: #20192d; background: var(--gold); }
+		.restart-button:hover { background: #ffe09a; }
+		.footer-note { margin: 20px 0 0; color: #95a0c1; font-size: 12px; text-align: center; }
+		.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+
+		@keyframes answer-pop { 0% { transform: scale(.98); } 55% { transform: scale(1.02); } 100% { transform: scale(1); } }
+		@keyframes answer-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+		@keyframes feedback-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+		@media (max-width: 600px) {
+			.page { width: min(100% - 28px, 1020px); padding-top: 18px; }
+			main { padding-top: 30px; }
+			.dashboard { grid-template-columns: minmax(0, 1fr) 92px; gap: 8px; }
+			.score-box { padding-right: 4px; }
+			.answers { grid-template-columns: 1fr; }
+			.answer { min-height: 56px; }
+			.quiz-panel { padding: 24px 18px; }
+			.quiz-panel::after { top: -100px; right: -105px; }
+			.intro-copy { font-size: 14px; }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+		}
+	</style>
+</head>
+<body>
+	<div class="page">
+		<header class="topbar">
+			<div class="brand" aria-label="별의 항해 우주 탐험 퀴즈">
+				<span class="brand-mark" aria-hidden="true">✦</span>
+				<div>
+					<p class="brand-name">별의 항해</p>
+					<p class="brand-subtitle">우주 탐험 퀴즈</p>
+				</div>
+			</div>
+			<span class="mission-label">탐사 임무 01</span>
+		</header>
+
+		<main>
+			<section class="intro" aria-labelledby="page-title">
+				<p class="eyebrow">준비, 발사!</p>
+				<h1 id="page-title">우주 탐험 퀴즈</h1>
+				<p class="intro-copy">태양계와 별들에 관한 10가지 질문에 답하며 우주 지식을 시험해 보세요.</p>
+			</section>
+
+			<section class="dashboard" aria-label="퀴즈 현황">
+				<div>
+					<div class="progress-copy">
+						<strong id="question-count">1 / 10 문제</strong>
+						<span id="progress-label">탐사 진행률 10%</span>
+					</div>
+					<div id="progress-track" class="progress-track" role="progressbar" aria-label="퀴즈 진행률" aria-valuemin="0" aria-valuemax="10" aria-valuenow="1" aria-valuetext="10문제 중 1문제">
+						<div id="progress-fill" class="progress-fill"></div>
+					</div>
+				</div>
+				<div class="score-box" aria-live="polite" aria-atomic="true">
+					<span class="score-caption">현재 점수</span>
+					<span class="score-value"><span id="score">0</span><span aria-hidden="true"> / 10</span><span class="visually-hidden" id="score-sr"> 10점 만점</span></span>
+				</div>
+			</section>
+
+			<section id="quiz-panel" class="quiz-panel" aria-labelledby="question-title">
+				<p id="question-kicker" class="question-kicker">QUESTION 01</p>
+				<h2 id="question-title" tabindex="-1">태양계에서 가장 큰 행성은 무엇일까요?</h2>
+				<div id="answers" class="answers" role="group" aria-labelledby="question-title"></div>
+				<div id="feedback" class="feedback" aria-live="polite" aria-atomic="true"></div>
+				<div class="panel-footer">
+					<button id="next-button" class="next-button" type="button" hidden>다음 문제 <span aria-hidden="true">→</span></button>
+				</div>
+			</section>
+
+			<section id="results" class="quiz-panel results" aria-labelledby="results-title" hidden>
+				<div class="results-icon" aria-hidden="true">✦</div>
+				<p class="eyebrow">임무 완료</p>
+				<h2 id="results-title" tabindex="-1">멋진 우주 탐험이었어요!</h2>
+				<p id="results-copy" class="results-copy"></p>
+				<p class="final-score"><span id="final-score">0</span><span aria-hidden="true"> / 10</span><span class="visually-hidden">점</span></p>
+				<button id="restart-button" class="restart-button" type="button">다시 탐험하기 <span aria-hidden="true">↻</span></button>
+			</section>
+			<p class="footer-note">천천히 생각해도 괜찮아요. 별들은 기다려 줍니다.</p>
+		</main>
+	</div>
+
+	<script>
+		const questions = [
+			{ question: "태양계에서 가장 큰 행성은 무엇일까요?", choices: ["토성", "목성", "해왕성", "지구"], answer: 1, detail: "목성은 다른 모든 행성을 합친 것보다도 무겁고, 지름은 지구의 약 11배예요." },
+			{ question: "태양에서 가장 가까운 행성은 무엇일까요?", choices: ["금성", "지구", "수성", "화성"], answer: 2, detail: "수성은 태양에서 평균 약 5,790만 km 떨어져 있는 첫 번째 행성이에요." },
+			{ question: "붉은 행성이라는 별명을 가진 행성은 무엇일까요?", choices: ["화성", "금성", "토성", "천왕성"], answer: 0, detail: "화성 표면의 산화철 먼지가 붉은빛을 띠게 해요." },
+			{ question: "지구의 자연 위성 이름은 무엇일까요?", choices: ["포보스", "타이탄", "달", "유로파"], answer: 2, detail: "달은 지구의 유일한 자연 위성이며, 지구를 도는 데 약 한 달이 걸려요." },
+			{ question: "태양계에서 고리가 가장 눈에 띄는 행성은 무엇일까요?", choices: ["목성", "토성", "화성", "수성"], answer: 1, detail: "토성의 고리는 얼음과 암석 조각으로 이루어져 있어요." },
+			{ question: "태양은 어떤 종류의 천체일까요?", choices: ["행성", "혜성", "별", "위성"], answer: 2, detail: "태양은 스스로 빛과 열을 내는 별이에요. 지구에서 가장 가까운 별이기도 해요." },
+			{ question: "태양계에서 가장 뜨거운 행성은 무엇일까요?", choices: ["수성", "화성", "금성", "목성"], answer: 2, detail: "두꺼운 대기가 열을 가두는 온실 효과 때문에 금성은 수성보다도 뜨거워요." },
+			{ question: "태양계 행성 중 옆으로 누운 듯 자전하는 행성은 무엇일까요?", choices: ["해왕성", "천왕성", "토성", "지구"], answer: 1, detail: "천왕성의 자전축은 공전 궤도면에 거의 나란히 누워 있어요." },
+			{ question: "빛이 지구에서 달까지 가는 데 걸리는 시간은 약 얼마일까요?", choices: ["1.3초", "1.3분", "13초", "13분"], answer: 0, detail: "달빛은 약 1.3초 만에 지구에 도착해요. 태양빛은 약 8분 20초가 걸리죠." },
+			{ question: "태양계에서 가장 큰 화산이 있는 행성은 어디일까요?", choices: ["금성", "지구", "화성", "수성"], answer: 2, detail: "화성의 올림푸스산은 높이가 약 22km로, 태양계에서 알려진 가장 큰 화산이에요." }
+		];
+
+		const letters = ["ㄱ", "ㄴ", "ㄷ", "ㄹ"];
+		let questionIndex = 0;
+		let score = 0;
+		let hasAnswered = false;
+
+		const questionCount = document.querySelector("#question-count");
+		const progressLabel = document.querySelector("#progress-label");
+		const progressTrack = document.querySelector("#progress-track");
+		const progressFill = document.querySelector("#progress-fill");
+		const scoreElement = document.querySelector("#score");
+		const questionKicker = document.querySelector("#question-kicker");
+		const questionTitle = document.querySelector("#question-title");
+		const answersElement = document.querySelector("#answers");
+		const feedbackElement = document.querySelector("#feedback");
+		const nextButton = document.querySelector("#next-button");
+		const quizPanel = document.querySelector("#quiz-panel");
+		const resultsPanel = document.querySelector("#results");
+
+		function renderQuestion(moveFocus = false) {
+			const current = questions[questionIndex];
+			const progress = questionIndex + 1;
+			questionCount.textContent = `${progress} / ${questions.length} 문제`;
+			progressLabel.textContent = `탐사 진행률 ${Math.round((progress / questions.length) * 100)}%`;
+			progressTrack.setAttribute("aria-valuenow", String(progress));
+			progressTrack.setAttribute("aria-valuetext", `${questions.length}문제 중 ${progress}문제`);
+			progressFill.style.width = `${(progress / questions.length) * 100}%`;
+			questionKicker.textContent = `QUESTION ${String(progress).padStart(2, "0")}`;
+			questionTitle.textContent = current.question;
+			feedbackElement.textContent = "";
+			feedbackElement.removeAttribute("data-state");
+			nextButton.hidden = true;
+			hasAnswered = false;
+
+			answersElement.replaceChildren(...current.choices.map((choice, index) => {
+				const button = document.createElement("button");
+				button.className = "answer";
+				button.type = "button";
+				button.dataset.index = String(index);
+				const letter = document.createElement("span");
+				letter.className = "answer-letter";
+				letter.setAttribute("aria-hidden", "true");
+				letter.textContent = letters[index];
+				const label = document.createElement("span");
+				label.textContent = choice;
+				button.append(letter, label);
+				button.addEventListener("click", () => chooseAnswer(index));
+				return button;
+			}));
+
+			if (moveFocus) questionTitle.focus();
+		}
+
+		function chooseAnswer(selectedIndex) {
+			if (hasAnswered) return;
+			hasAnswered = true;
+			const current = questions[questionIndex];
+			const isCorrect = selectedIndex === current.answer;
+			const buttons = [...answersElement.querySelectorAll("button")];
+			buttons.forEach((button, index) => {
+				button.disabled = true;
+				if (index === current.answer) button.classList.add("is-correct");
+				if (index === selectedIndex && !isCorrect) button.classList.add("is-wrong");
+			});
+
+			if (isCorrect) {
+				score += 1;
+				scoreElement.textContent = String(score);
+			}
+
+			feedbackElement.dataset.state = isCorrect ? "correct" : "incorrect";
+			const message = document.createElement("p");
+			message.className = "feedback-message";
+			const headline = document.createElement("strong");
+			headline.textContent = isCorrect ? "정답이에요!" : "아쉽지만 괜찮아요.";
+			const detail = document.createElement("span");
+			detail.className = "feedback-detail";
+			detail.textContent = current.detail;
+			message.append(headline, detail);
+			feedbackElement.replaceChildren(message);
+			nextButton.textContent = questionIndex === questions.length - 1 ? "결과 보기" : "다음 문제 →";
+			nextButton.hidden = false;
+			nextButton.focus();
+		}
+
+		function showResults() {
+			quizPanel.hidden = true;
+			resultsPanel.hidden = false;
+			progressTrack.setAttribute("aria-valuenow", String(questions.length));
+			progressTrack.setAttribute("aria-valuetext", `${questions.length}문제 완료`);
+			progressLabel.textContent = "탐사 완료 100%";
+			progressFill.style.width = "100%";
+			document.querySelector("#final-score").textContent = String(score);
+			const resultCopy = score === questions.length
+				? "완벽해요! 우주에 관한 놀라운 지식을 갖고 있네요."
+				: score >= 7
+					? "대단한 탐험이었어요! 우주 지식이 아주 탄탄하군요."
+					: score >= 4
+						? "좋은 출발이에요! 새로운 별을 더 알아가 봐요."
+						: "탐험은 이제부터예요. 다시 도전하며 우주를 만나 보세요!";
+			document.querySelector("#results-copy").textContent = resultCopy;
+			document.querySelector("#results-title").focus();
+		}
+
+		nextButton.addEventListener("click", () => {
+			if (questionIndex === questions.length - 1) {
+				showResults();
+				return;
+			}
+			questionIndex += 1;
+			renderQuestion(true);
+		});
+
+		document.querySelector("#restart-button").addEventListener("click", () => {
+			questionIndex = 0;
+			score = 0;
+			scoreElement.textContent = "0";
+			resultsPanel.hidden = true;
+			quizPanel.hidden = false;
+			renderQuestion(true);
+		});
+
+		renderQuestion();
+	</script>
+</body>
+</html>
